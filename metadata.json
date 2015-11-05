@@ -1,6 +1,6 @@
 {
   "name": "jorisw-haraka",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": "Joris van der Wel <joris@jorisvanderwel.com>",
   "summary": "Installs and configures the Haraka MTA",
   "description": "Installs and configures the Haraka MTA",
