@@ -1,0 +1,29 @@
+{
+  "name": "jorisw-haraka",
+  "version": "1.0.0",
+  "author": "Joris van der Wel <joris@jorisvanderwel.com>",
+  "summary": "Installs and configures the Haraka MTA",
+  "description": "Installs and configures the Haraka MTA",
+  "license": "MIT",
+  "source": "git://github.com/Joris-van-der-Wel/puppet-haraka.git",
+  "project_page": "https://github.com/Joris-van-der-Wel/puppet-haraka",
+  "issues_url": "https://github.com/Joris-van-der-Wel/puppet-haraka/issues",
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">=4.0.0 <5.0.0"
+    }
+  ],
+  "dependencies": [
+    {"name":"puppetlabs/stdlib","version_requirement":">= 4.9.0"},
+    {"name":"puppetlabs/inifile","version_requirement":">= 1.4.0 <2.0.0"}
+  ]
+}
