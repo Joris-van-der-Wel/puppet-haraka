@@ -184,6 +184,10 @@ class haraka::install_node {
   ])
 
   exec { 'install nvm for haraka-src':
+    require => [
+      Package['wget'],
+      Class['haraka::storage'],
+    ],
     command => "/bin/su -l haraka-src sh -c '$cd && $env && /bin/wget -qO- https://raw.githubusercontent.com/creationix/nvm/v${haraka::nvm_version}/install.sh | /bin/bash'",
     unless  => "/bin/test -f /opt/haraka/nvm/nvm.sh && $cd && $env && $sourcenvm && test $(nvm --version) == '${haraka::nvm_version}'"
   }
@@ -238,16 +242,25 @@ class haraka::initialize_config {
   $env = $haraka::path_export
 
   exec { 'initialize haraka config':
-    require => [ Class['haraka::install'] ],
+    require => [ Class['haraka::storage'], Class['haraka::install'] ],
     command => "/bin/su -l haraka-src sh -c '$env && haraka -i /etc/haraka'",
     creates => '/etc/haraka/package.json'
   }
 }
 
 class haraka::smtp_config {
+  file { '/etc/haraka/config/smtp.ini':
+    require => [ Class['haraka::initialize_config'] ],
+    ensure => file,
+    owner => 'haraka-src',
+    group => 'haraka',
+    content => '',
+    replace => false,
+  }
+
   Ini_setting {
     ensure  => present,
-    require => Class['haraka::initialize_config'],
+    require => [ Class['haraka::initialize_config'], File['/etc/haraka/config/smtp.ini'] ],
     path    => '/etc/haraka/config/smtp.ini',
     notify  => Service['haraka'],
   }
@@ -292,8 +305,8 @@ class haraka::plugins_config {
   $plugins = $haraka::plugins
 
   file { '/etc/haraka/config/plugins':
-    require => Class['haraka::initialize_config'],
-    ensure => 'file',
+    require => [ Class['haraka::initialize_config'] ],
+    ensure => file,
     owner => 'haraka-src',
     group => 'haraka',
     content => inline_template('<%= @plugins.join("\n") + "\n" %>'),
@@ -302,8 +315,16 @@ class haraka::plugins_config {
 }
 
 class haraka::systemd_config {
+
+  file { '/usr/lib/systemd/system/haraka.service':
+    ensure => present,
+    content => '',
+    replace => false,
+  }
+
   Ini_setting {
     ensure => present,
+    require => File['/usr/lib/systemd/system/haraka.service'],
     path => '/usr/lib/systemd/system/haraka.service',
   }
 
@@ -331,6 +352,7 @@ class haraka::systemd_config {
 class haraka::service {
   service { 'haraka':
     require => [
+      Class['haraka::install'],
       Class['haraka::systemd_config']
     ],
     ensure => $haraka::service_ensure,

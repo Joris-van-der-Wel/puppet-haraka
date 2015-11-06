@@ -6,8 +6,18 @@ class haraka::plugin::relay (
     warning('"relay" plugin is not configured to load')
   }
 
+  file { '/etc/haraka/config/relay.ini':
+    require => [ Class['haraka::initialize_config'] ],
+    ensure => file,
+    owner => 'haraka-src',
+    group => 'haraka',
+    content => '',
+    replace => false,
+  }
+
   ini_setting { 'haraka/relay.ini/acl':
-    ensure => 'present',
+    require => File['/etc/haraka/config/relay.ini'],
+    ensure => present,
     path => '/etc/haraka/config/relay.ini',
     section => 'relay',
     setting => 'acl',
