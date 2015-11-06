@@ -174,9 +174,15 @@ class haraka::install_node {
   $env = 'export NVM_DIR=/opt/haraka/nvm'
   $sourcenvm = 'source /opt/haraka/nvm/nvm.sh'
 
-  ensure_packages(['wget']) # stdlib
-  Package['wget']
-  ->
+  ensure_packages([ # stdlib
+    'wget',
+
+    # required by node-gyp (for centos 7):
+    'gcc-c++',
+    'make',
+    'python', # python 2
+  ])
+
   exec { 'install nvm for haraka-src':
     command => "/bin/su -l haraka-src sh -c '$cd && $env && /bin/wget -qO- https://raw.githubusercontent.com/creationix/nvm/v${haraka::nvm_version}/install.sh | /bin/bash'",
     unless  => "/bin/test -f /opt/haraka/nvm/nvm.sh && $cd && $env && $sourcenvm && test $(nvm --version) == '${haraka::nvm_version}'"
@@ -208,7 +214,13 @@ class haraka::install {
   $env = $haraka::path_export
 
   exec { 'install haraka using npm':
-    require => [ Class['haraka::install_node'] ],
+    require => [
+      Class['haraka::storage'],
+      Class['haraka::install_node'],
+      Package['gcc-c++'],
+      Package['make'],
+      Package['python']
+  ],
     command => "/bin/su -l haraka-src sh -c '$cd && $env && npm install Haraka@${haraka::version}'",
     unless => "/bin/su -l haraka-src sh -c '$cd && $env && npm ls Haraka@${haraka::version}'",
   }
